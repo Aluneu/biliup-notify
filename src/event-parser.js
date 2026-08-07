@@ -14,7 +14,8 @@ const EVENT_TYPES = {
   record_stop:      { label: '录制完成',     emoji: '✅' },
   upload_start:     { label: '开始上传',     emoji: '📤' },
   upload_success:   { label: '投稿成功',     emoji: '🎉' },
-  error:            { label: '出错',         emoji: '⚠️' }
+  error:            { label: '出错',         emoji: '⚠️' },
+  alert:            { label: '告警',         emoji: '🔔' }
 };
 
 // 解析规则:优先顺序匹配
