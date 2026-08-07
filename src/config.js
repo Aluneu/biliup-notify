@@ -39,8 +39,21 @@ const DEFAULTS = {
     botToken: '',
     // 接收者 chat_id,多个用英文逗号分隔(支持 -100xxx 群组)
     chatIds: '',
+    // 双向控制:允许配置的 chat 通过 Bot 命令管理 biliup(/status /add /pause 等)
+    botControl: true,
     // 推送超时(秒)
     timeout: 10
+  },
+  // 告警(可选,全部关闭即不启用):
+  //   emptyFileMB   — 新录制文件小于该大小(MB)判定为"疑似空录制"告警,0=关闭
+  //   diskPath      — 录播文件所在目录(与 biliup 同机时填写,用于磁盘空间预警),空=关闭
+  //   diskFreeGB    — 磁盘剩余空间低于该值(GB)告警
+  //   checkInterval — 检查间隔(秒)
+  alerts: {
+    emptyFileMB: 1,
+    diskPath: '',
+    diskFreeGB: 5,
+    checkInterval: 600
   },
   webhooks: [
     // {
@@ -59,7 +72,8 @@ const DEFAULTS = {
     record_stop: true,        // 录制完成
     upload_start: true,       // 开始上传
     upload_success: true,     // 投稿成功
-    error: true               // 出错
+    error: true,              // 出错
+    alert: true               // 告警(空录制/磁盘不足)
   },
   history: {
     maxEntries: 200   // 保留最近推送记录条数
@@ -148,4 +162,4 @@ function reset() {
   return getPublic();
 }
 
-module.exports = { get, getPublic, update, reset, save, CONFIG_PATH };
+module.exports = { get, getPublic, update, reset, save, CONFIG_PATH, DATA_DIR };
