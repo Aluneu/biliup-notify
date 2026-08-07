@@ -129,12 +129,50 @@
           </div>
         </div>
         <div class="form-grid" style="margin-top:10px">
+          <div class="field" style="justify-content:center">
+            <div class="toggle-row">
+              <span class="toggle-label">双向控制 <span style="color:var(--text-dim)">（Telegram 里发 /status、/add、/pause 等命令管理 biliup）</span></span>
+              <label class="switch">
+                <input type="checkbox" id="tgBotControl">
+                <span class="track"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:10px">
           <div class="field">
             <label>出站网络代理 <span style="color:var(--text-dim)">（Telegram / Webhook 推送都走；留空 = 直连）</span></label>
             <input type="text" id="netProxy" placeholder="如 http://127.0.0.1:7890（直连 Telegram 不通时必须填）">
           </div>
         </div>
-        <div class="field-tip">发送格式为 HTML，含主播名 / 直播间链接 / 时间 / 原始日志。测试前请先保存配置。</div>
+        <div class="field-tip">发送格式为 HTML，含主播名 / 直播间链接 / 时间 / 原始日志。测试前请先保存配置。启用双向控制后，配置的 Chat 可在 Telegram 直接发命令（发送 /help 查看命令列表）。</div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">告警 <span class="hint">疑似空录制 / 磁盘空间不足</span></div>
+        </div>
+        <div class="form-grid" style="grid-template-columns: repeat(3, 1fr)">
+          <div class="field">
+            <label>空录制阈值（MB，0=关闭）</label>
+            <input type="number" id="alertEmptyMB" min="0" step="0.5" placeholder="1">
+          </div>
+          <div class="field">
+            <label>录播目录路径 <span style="color:var(--text-dim)">（磁盘预警用，空=关闭）</span></label>
+            <input type="text" id="alertDiskPath" placeholder="如 D:\录播 或 /opt（与 biliup 同机才有效）">
+          </div>
+          <div class="field">
+            <label>磁盘剩余预警线（GB）</label>
+            <input type="number" id="alertDiskGB" min="0" step="1" placeholder="5">
+          </div>
+        </div>
+        <div class="form-grid" style="grid-template-columns: 1fr 2fr; margin-top:10px">
+          <div class="field">
+            <label>检查间隔（秒）</label>
+            <input type="number" id="alertInterval" min="30" step="30" placeholder="600">
+          </div>
+        </div>
+        <div class="field-tip">空录制检测：新增录制文件小于阈值即告警；磁盘预警：剩余空间低于预警线即告警（24 小时内最多一次）。检查依赖 biliup 后端可达；磁盘探测仅在与 biliup 同机部署时有效，不可用时自动跳过。</div>
       </div>
 
       <div class="card wide">
