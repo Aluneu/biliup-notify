@@ -28,6 +28,18 @@ class LogWatcher extends (require('events').EventEmitter) {
     }
   }
 
+  // 重启监听(biliup 地址变更后调用:断开旧连接,重置状态,重新连接)
+  restart() {
+    this.stop();
+    this.stopped = false;
+    this.states.clear();
+    for (const ch of CHANNELS) {
+      this.states.set(ch, { connected: false, retries: 0, lastError: '', lastMsgAt: 0, noFile: false });
+    }
+    this.emit('status', this.getStatus());
+    this.start();
+  }
+
   connect(channel) {
     if (this.stopped || !config.get().biliup.enabled) return;
     // 清理残留连接,避免 map 状态错乱
