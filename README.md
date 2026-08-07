@@ -22,6 +22,12 @@ biliup 后端(`:19159`)通过 `GET /v1/ws/logs?file=<频道>` WebSocket 逐行�
 
 ### 🪟 Windows 小白版(双击即用)
 
+**方式一:Release 下载(无需装 Node)**
+
+到 [Releases](https://github.com/Aluneu/biliup-notify/releases) 下载 `biliup-notify-windows-x64.zip`,解压后**双击 `biliup-notify.exe`** 即可,浏览器自动打开网页端。配置保存在 exe 同目录的 `config.json`(更新版本时保留该文件即可迁移配置)。
+
+**方式二:源码运行**
+
 1. 下载项目,解压到任意目录
 2. 双击 **`install.bat`** ——自动检测 Node.js,没装会引导你一键安装
 3. 双击 **`start.bat`** ——自动安装依赖、启动服务,浏览器自动打开网页端
