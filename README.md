@@ -107,6 +107,34 @@ Telegram 与 Webhook 也可全部在网页端配置,保存即生效(无需重启
 
 > ⚠️ **网络代理**:Telegram 推送通过 `network.proxy` 配置的出站 HTTP 代理发送(Node 不走系统代理)。本机无法直连 `api.telegram.org` 时必须填写(如 `http://127.0.0.1:7890`),否则推送会超时失败。Webhook 默认直连(适配本地/内网),如某个 webhook 需要走代理,在其配置对象里加 `"proxy": "http://…"` 字段。
 
+### 🤖 Telegram 双向控制
+
+启用 `telegram.botControl`(默认开)后,配置的 Chat 可直接在 Telegram 发命令管理 biliup:
+
+```
+/status — 所有主播状态
+/live — 正在录制的主播
+/add <URL> [备注] — 添加主播
+/pause <id> — 暂停/恢复(切换)
+/del <id> — 删除主播
+/files [n] — 最近录制文件
+/info <id> — 主播详情
+/help — 命令列表
+```
+
+### 🔔 告警
+
+`alerts` 配置(全部可关闭):
+
+| 项 | 说明 | 默认 |
+| --- | --- | --- |
+| `emptyFileMB` | 新录制文件小于该大小(MB)判定"疑似空录制"告警,0=关闭 | 1 |
+| `diskPath` | 录播文件所在目录(与 biliup 同机时填,磁盘预警用),空=关闭 | - |
+| `diskFreeGB` | 磁盘剩余低于该值(GB)告警(24h 最多一次) | 5 |
+| `checkInterval` | 检查间隔(秒) | 600 |
+
+> 磁盘预警基于本地目录探测:仅当本服务与 biliup 同机部署时有效,探测失败自动跳过(诚实降级);biliup 后端没有磁盘接口。
+
 ### Telegram 消息格式
 
 HTML 排版(标题 + 分隔线 + 图标字段),有直播间链接时附「🔗 打开直播间」内联按钮,点击直达直播间:
