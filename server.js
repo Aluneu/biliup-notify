@@ -63,7 +63,14 @@ app.get('/api/config', (req, res) => res.json(config.getPublic()));
 
 app.put('/api/config', (req, res) => {
   try {
+    const oldBase = config.get().biliup.baseUrl;
     const cfg = config.update(req.body || {});
+    // biliup 地址变更 → 重启日志监听(新地址重新连接)
+    const newBase = cfg.biliup.baseUrl;
+    if (newBase !== oldBase) {
+      console.log(`[ws] biliup 地址变更: ${oldBase} -> ${newBase},重启监听`);
+      watcher.restart();
+    }
     res.json({ ok: true, config: cfg });
   } catch (e) {
     res.status(400).json({ ok: false, error: e.message });
