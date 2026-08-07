@@ -111,6 +111,25 @@
             <label>服务地址</label>
             <input type="text" id="biliupBaseUrl" placeholder="http://localhost:19159（按你实际部署的地址和端口填）">
           </div>
+          <div class="field" style="justify-content:center">
+            <div class="toggle-row">
+              <span class="toggle-label">启用认证</span>
+              <label class="switch">
+                <input type="checkbox" id="biliupAuth">
+                <span class="track"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid" style="grid-template-columns: 1fr 2fr; margin-top:10px">
+          <div class="field">
+            <label>用户名（固定 biliup）</label>
+            <input type="text" id="biliupAuthUser" value="biliup" placeholder="biliup">
+          </div>
+          <div class="field">
+            <label>密码 <span style="color:var(--text-dim)">（biliup server 启动参数 --auth 设置的 WebUI 密码）</span></label>
+            <input type="password" id="biliupAuthPass" placeholder="后端启用 --auth 时必填">
+          </div>
         </div>
         <div class="field-tip">日志监听与主播名解析都从这个地址读取,保存后自动重连。默认 <code>http://localhost:19159</code>,但 biliup 端口可能不同(如 <code>-p</code> 参数、Docker 映射、反代),请按实际填。Docker 部署的 biliup 一般填 <code>http://host.docker.internal:19159</code> 或 <code>http://&lt;容器名&gt;:19159</code>。</div>
       </div>
