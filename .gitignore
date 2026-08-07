@@ -2,6 +2,8 @@
 config.json
 history.json
 tests/received.json
+.env
+data/
 
 # 依赖
 node_modules/
