@@ -60,7 +60,9 @@ npm start          # 默认 http://localhost:4000
 
 打开 `http://localhost:4000` 即可配置。
 
-> 环境变量(优先级高于 config.json):`BILIUP_NOTIFY_PORT`、`BILIUP_NOTIFY_BILIUP_BASEURL`、`BILIUP_NOTIFY_PROXY`、`BILIUP_NOTIFY_TELEGRAM_ENABLED`、`BILIUP_NOTIFY_TELEGRAM_BOTTOKEN`、`BILIUP_NOTIFY_TELEGRAM_CHATIDS`、`BILIUP_NOTIFY_DATA_DIR`(数据目录,Docker 用)、`BILIUP_NOTIFY_NO_OPEN=1`(禁止自动打开浏览器,容器用)。
+> 环境变量(优先级高于 config.json):`BILIUP_NOTIFY_PORT`、`BILIUP_NOTIFY_BILIUP_BASEURL`、`BILIUP_NOTIFY_BILIUP_AUTH_ENABLED`、`BILIUP_NOTIFY_BILIUP_AUTH_USERNAME`、`BILIUP_NOTIFY_BILIUP_AUTH_PASSWORD`、`BILIUP_NOTIFY_PROXY`、`BILIUP_NOTIFY_TELEGRAM_ENABLED`、`BILIUP_NOTIFY_TELEGRAM_BOTTOKEN`、`BILIUP_NOTIFY_TELEGRAM_CHATIDS`、`BILIUP_NOTIFY_DATA_DIR`(数据目录,Docker 用)、`BILIUP_NOTIFY_NO_OPEN=1`(禁止自动打开浏览器,容器用)。
+
+> 🔐 **biliup 启用 `--auth` 时**:在「通知配置 → biliup 后端」开启"启用认证"并填写密码(用户名固定 `biliup`)。服务会自动登录(biliup 登录成功返回 303 + `biliup.sid` Session Cookie,自动捕获并在会话失效时重登;首次部署无用户时自动注册)。日志监听 WebSocket 端点不受登录守卫保护,无需认证。
 
 ### 配置项(config.json)
 
@@ -73,6 +75,11 @@ npm start          # 默认 http://localhost:4000
   },
   "biliup": {
     "baseUrl": "http://localhost:19159",   // biliup 后端地址(默认端口 19159,但可能不同——按实际部署填,网页端可改)
+    "auth": {                               // 后端启用 --auth 时的登录凭据(未开启认证则忽略)
+      "enabled": false,
+      "username": "biliup",                 // WebUI 管理员用户名固定为 biliup
+      "password": ""
+    },
     "enabled": true,                        // 是否监听日志
     "reconnectBaseDelay": 3,                // 断线重连基础间隔(秒)
     "refreshStreamersInterval": 60          // 主播名映射缓存刷新(秒)
