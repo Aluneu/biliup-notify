@@ -20,12 +20,39 @@ biliup 后端(`:19159`)通过 `GET /v1/ws/logs?file=<频道>` WebSocket 逐行�
 
 ## 快速开始
 
+### 🪟 Windows 小白版(双击即用)
+
+1. 下载项目,解压到任意目录
+2. 双击 **`install.bat`** ——自动检测 Node.js,没装会引导你一键安装
+3. 双击 **`start.bat`** ——自动安装依赖、启动服务,浏览器自动打开网页端
+4. 按网页端顶部提示配置 Telegram / Webhook,点「保存」→「发送测试推送」验证
+
+> 每次开机只需双击 `start.bat`;关闭窗口即停止服务。
+
+### 🐳 Docker 版(服务器 / VPS)
+
+```bash
+# 1. 复制环境变量模板并填写 Telegram 配置(可选)
+cp .env.example .env
+
+# 2. 一键启动 biliup + 推送服务
+docker compose up -d
+
+# 3. 打开 http://<服务器IP>:4000
+```
+
+Docker 版会同时启动 biliup 官方镜像(`ghcr.io/biliup/caution:latest`)和推送服务,数据分别持久化在 `data/biliup/` 与 `data/notify/`。Telegram 配置可通过 `.env` 注入,也可之后在网页端修改。
+
+### 手动部署(有 Node 环境)
+
 ```bash
 npm install
 npm start          # 默认 http://localhost:4000
 ```
 
 打开 `http://localhost:4000` 即可配置。
+
+> 环境变量(优先级高于 config.json):`BILIUP_NOTIFY_PORT`、`BILIUP_NOTIFY_BILIUP_BASEURL`、`BILIUP_NOTIFY_PROXY`、`BILIUP_NOTIFY_TELEGRAM_ENABLED`、`BILIUP_NOTIFY_TELEGRAM_BOTTOKEN`、`BILIUP_NOTIFY_TELEGRAM_CHATIDS`、`BILIUP_NOTIFY_DATA_DIR`(数据目录,Docker 用)、`BILIUP_NOTIFY_NO_OPEN=1`(禁止自动打开浏览器,容器用)。
 
 ### 配置项(config.json)
 
