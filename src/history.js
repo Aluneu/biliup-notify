@@ -4,8 +4,14 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 
-// 数据目录:默认项目根目录;Docker 等场景用环境变量 BILIUP_NOTIFY_DATA_DIR 指向挂载卷
-const DATA_DIR = process.env.BILIUP_NOTIFY_DATA_DIR || path.join(__dirname, '..');
+// 数据目录:
+//   - 普通运行(node server.js):项目根目录
+//   - SEA exe:exe 所在目录(与 public/ 同级)
+//   - Docker 等:环境变量 BILIUP_NOTIFY_DATA_DIR 指向挂载卷
+const EXE_NAME = path.basename(process.execPath).toLowerCase();
+const isSea = process.isSea === true || (EXE_NAME !== 'node' && EXE_NAME !== 'node.exe');
+const DATA_DIR = process.env.BILIUP_NOTIFY_DATA_DIR
+  || (isSea ? path.dirname(process.execPath) : path.join(__dirname, '..'));
 const HISTORY_PATH = path.join(DATA_DIR, 'history.json');
 const MAX_KEEP = 500;
 
