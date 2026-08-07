@@ -139,6 +139,14 @@ app.listen(port, () => {
   console.log(`  网页端:  http://localhost:${port}`);
   console.log(`  biliup:  ${config.get().biliup.baseUrl}`);
   console.log('========================================');
+  // Windows 桌面环境:启动后自动打开浏览器(容器/无头环境用 BILIUP_NOTIFY_NO_OPEN=1 关闭)
+  if (!process.env.BILIUP_NOTIFY_NO_OPEN && process.platform === 'win32') {
+    setTimeout(() => {
+      try {
+        require('child_process').exec(`start "" http://localhost:${port}`);
+      } catch (e) { /* 打开失败不影响服务 */ }
+    }, 800);
+  }
   watcher.start();
 });
 
