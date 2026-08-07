@@ -1,0 +1,33 @@
+{
+  "server": {
+    "port": 4000
+  },
+  "network": {
+    "proxy": ""
+  },
+  "biliup": {
+    "baseUrl": "http://localhost:19159",
+    "enabled": true,
+    "reconnectBaseDelay": 3,
+    "refreshStreamersInterval": 60
+  },
+  "telegram": {
+    "enabled": false,
+    "botToken": "",
+    "chatIds": "",
+    "timeout": 10
+  },
+  "webhooks": [],
+  "events": {
+    "streamer_live": true,
+    "streamer_offline": true,
+    "record_start": true,
+    "record_stop": true,
+    "upload_start": true,
+    "upload_success": true,
+    "error": true
+  },
+  "history": {
+    "maxEntries": 200
+  }
+}
