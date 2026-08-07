@@ -8,6 +8,8 @@ const notifier = require('./src/notifier');
 const biliupClient = require('./src/biliup-client');
 const { LogWatcher } = require('./src/log-watcher');
 const eventParser = require('./src/event-parser');
+const { TgBot } = require('./src/tg-bot');
+const { AlertWatch } = require('./src/alert-watch');
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
@@ -40,6 +42,18 @@ watcher.on('line', async ({ channel, text }) => {
 watcher.on('status', () => { /* 状态变化,由 /api/state 拉取 */ });
 watcher.on('log', msg => console.log('[ws]', msg));
 
+// ---------- 双向控制 Bot ----------
+const tgBot = new TgBot();
+
+// ---------- 告警检查器(空录制 / 磁盘空间) ----------
+const alertWatch = new AlertWatch();
+alertWatch.on('alert', async (event) => {
+  console.log(`[alert] ${event.emoji} ${event.typeLabel}: ${event.raw}`);
+  pushRecent(event);
+  const result = await notifier.dispatch(event);
+  history.record(event, result);
+});
+
 // ---------- API ----------
 app.get('/api/state', async (req, res) => {
   let backendAlive = false;
@@ -71,6 +85,9 @@ app.put('/api/config', (req, res) => {
       console.log(`[ws] biliup 地址变更: ${oldBase} -> ${newBase},重启监听`);
       watcher.restart();
     }
+    // Bot 控制 / 告警配置变更 → 重启对应模块
+    tgBot.stop(); tgBot.start();
+    alertWatch.stop(); alertWatch.start();
     res.json({ ok: true, config: cfg });
   } catch (e) {
     res.status(400).json({ ok: false, error: e.message });
@@ -155,7 +172,9 @@ app.listen(port, () => {
     }, 800);
   }
   watcher.start();
+  tgBot.start();
+  alertWatch.start();
 });
 
-process.on('SIGINT', () => { watcher.stop(); process.exit(0); });
-process.on('SIGTERM', () => { watcher.stop(); process.exit(0); });
+process.on('SIGINT', () => { watcher.stop(); tgBot.stop(); alertWatch.stop(); process.exit(0); });
+process.on('SIGTERM', () => { watcher.stop(); tgBot.stop(); alertWatch.stop(); process.exit(0); });
