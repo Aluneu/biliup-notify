@@ -26,11 +26,18 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        # CI 无 biliup 后端,SKIP_BACKEND=1 跳过依赖后端的断言
+        # CI 无 biliup 后端:SKIP_BACKEND=1;先启动服务再跑测试
         shell: pwsh
         run: |
           $env:SKIP_BACKEND = '1'
+          $env:BILIUP_NOTIFY_NO_OPEN = '1'
+          $env:BILIUP_NOTIFY_PORT = '4000'
+          Start-Process node -ArgumentList 'server.js' -WorkingDirectory $PWD
+          Start-Sleep 5
           npm test
+          $ec = $LASTEXITCODE
+          Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          exit $ec
 
       - name: Build exe (Node SEA)
         run: node scripts/build-exe.mjs
