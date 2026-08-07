@@ -32,6 +32,16 @@
   </header>
 
   <main>
+    <!-- 未配置引导 -->
+    <div class="setup-banner" id="setupBanner" hidden>
+      <div class="sb-icon">📢</div>
+      <div class="sb-body">
+        <div class="sb-title">还没配置推送通道</div>
+        <div class="sb-desc">配置 Telegram 或 Webhook 后,「录制完成 / 投稿成功」等事件才会推送到你手机上。</div>
+      </div>
+      <button class="btn primary sm" id="btnGoConfig">去配置</button>
+    </div>
+
     <!-- ============ 总览 ============ -->
     <section class="panel active" id="panel-overview">
       <div class="cards">
