@@ -66,6 +66,11 @@
           <div class="card-body">
             <div class="kv"><span>历史推送</span><b id="ovHistTotal">--</b></div>
             <div class="kv"><span>本会话事件</span><b id="ovEvtCount">--</b></div>
+            <div class="kv"><span>待重投队列</span><b id="ovQueueCount">--</b></div>
+            <div class="queue-actions">
+              <button class="btn ghost sm" id="btnRetryQueue">立即重投</button>
+              <button class="btn ghost sm danger" id="btnClearQueue">清空队列</button>
+            </div>
             <div class="kv"><span>当前时间</span><span id="ovClock">--</span></div>
           </div>
         </div>
@@ -108,6 +113,19 @@
           </div>
         </div>
         <div class="field-tip">日志监听与主播名解析都从这个地址读取,保存后自动重连。默认 <code>http://localhost:19159</code>,但 biliup 端口可能不同(如 <code>-p</code> 参数、Docker 映射、反代),请按实际填。Docker 部署的 biliup 一般填 <code>http://host.docker.internal:19159</code> 或 <code>http://&lt;容器名&gt;:19159</code>。</div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">安全 <span class="hint">网页端访问令牌</span></div>
+        </div>
+        <div class="form-grid" style="grid-template-columns: 1fr 2fr">
+          <div class="field">
+            <label>访问令牌 <span style="color:var(--text-dim)">（留空 = 不启用）</span></label>
+            <input type="password" id="authToken" placeholder="设置后所有 /api 请求需带令牌(浏览器首次会提示输入)">
+          </div>
+        </div>
+        <div class="field-tip">设置后,局域网内其他人无法查看/修改你的配置与推送。令牌会保存在浏览器 localStorage,服务重启不失效。请妥善保管——遗忘只能直接改 config.json。</div>
       </div>
 
       <div class="card wide">
@@ -189,6 +207,15 @@
           <div class="card-title">事件开关</div>
         </div>
         <div class="event-switches" id="eventSwitches"></div>
+        <div class="form-grid" style="grid-template-columns: 1fr 2fr; margin-top:12px">
+          <div class="field">
+            <label>推送去重窗口（秒，0=关闭）</label>
+            <input type="number" id="dedupWindow" min="0" step="5" placeholder="30">
+          </div>
+          <div class="field" style="justify-content:flex-end">
+            <span style="font-size:12px;color:var(--text-dim);align-self:center">同类型事件在窗口内只推送一次（如录制完成与下载完成两条日志只发一条通知）</span>
+          </div>
+        </div>
       </div>
 
       <div class="actions">
