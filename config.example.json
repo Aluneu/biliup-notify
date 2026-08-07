@@ -1,6 +1,7 @@
 {
   "server": {
-    "port": 4000
+    "port": 4000,
+    "authToken": ""
   },
   "network": {
     "proxy": ""
@@ -32,7 +33,9 @@
     "record_stop": true,
     "upload_start": true,
     "upload_success": true,
-    "error": true
+    "error": true,
+    "alert": true,
+    "dedupWindowSec": 30
   },
   "history": {
     "maxEntries": 200
