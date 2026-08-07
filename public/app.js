@@ -170,6 +170,10 @@ async function loadConfig() {
     $('#tgBotControl').checked = cfg.telegram.botControl !== false;
     $('#netProxy').value = (cfg.network && cfg.network.proxy) || '';
     $('#biliupBaseUrl').value = (cfg.biliup && cfg.biliup.baseUrl) || '';
+    const bAuth = (cfg.biliup && cfg.biliup.auth) || {};
+    $('#biliupAuth').checked = !!bAuth.enabled;
+    $('#biliupAuthUser').value = bAuth.username || 'biliup';
+    $('#biliupAuthPass').value = bAuth.password || '';
     $('#authToken').value = (cfg.server && cfg.server.authToken) || '';
     const al = cfg.alerts || {};
     $('#alertEmptyMB').value = al.emptyFileMB ?? 1;
@@ -250,6 +254,11 @@ function collectConfig() {
   cfg.network.proxy = $('#netProxy').value.trim();
   cfg.biliup = cfg.biliup || {};
   cfg.biliup.baseUrl = $('#biliupBaseUrl').value.trim().replace(/\/+$/, '') || 'http://localhost:19159';
+  cfg.biliup.auth = {
+    enabled: $('#biliupAuth').checked,
+    username: $('#biliupAuthUser').value.trim() || 'biliup',
+    password: $('#biliupAuthPass').value
+  };
   cfg.server = cfg.server || {};
   cfg.server.authToken = $('#authToken').value.trim();
   cfg.alerts = {
@@ -309,6 +318,9 @@ $('#btnReset').addEventListener('click', async () => {
     $('#tgBotControl').checked = true;
     $('#netProxy').value = '';
     $('#biliupBaseUrl').value = 'http://localhost:19159';
+    $('#biliupAuth').checked = false;
+    $('#biliupAuthUser').value = 'biliup';
+    $('#biliupAuthPass').value = '';
     $('#authToken').value = '';
     $('#alertEmptyMB').value = 1;
     $('#alertDiskPath').value = '';
@@ -414,7 +426,7 @@ $('#btnClearQueue').addEventListener('click', async () => {
 });
 
 // 表单变更标记
-['tgEnabled', 'tgToken', 'tgChatIds', 'tgBotControl', 'netProxy', 'biliupBaseUrl', 'authToken', 'alertEmptyMB', 'alertDiskPath', 'alertDiskGB', 'alertInterval', 'dedupWindow'].forEach(id => {
+['tgEnabled', 'tgToken', 'tgChatIds', 'tgBotControl', 'netProxy', 'biliupBaseUrl', 'biliupAuth', 'biliupAuthUser', 'biliupAuthPass', 'authToken', 'alertEmptyMB', 'alertDiskPath', 'alertDiskGB', 'alertInterval', 'dedupWindow'].forEach(id => {
   $('#' + id).addEventListener('change', () => saveDirty = true);
   $('#' + id).addEventListener('input', () => saveDirty = true);
 });
