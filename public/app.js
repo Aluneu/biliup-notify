@@ -154,8 +154,14 @@ async function loadConfig() {
     $('#tgEnabled').checked = !!cfg.telegram.enabled;
     $('#tgToken').value = cfg.telegram.botToken || '';
     $('#tgChatIds').value = cfg.telegram.chatIds || '';
+    $('#tgBotControl').checked = cfg.telegram.botControl !== false;
     $('#netProxy').value = (cfg.network && cfg.network.proxy) || '';
     $('#biliupBaseUrl').value = (cfg.biliup && cfg.biliup.baseUrl) || '';
+    const al = cfg.alerts || {};
+    $('#alertEmptyMB').value = al.emptyFileMB ?? 1;
+    $('#alertDiskPath').value = al.diskPath || '';
+    $('#alertDiskGB').value = al.diskFreeGB ?? 5;
+    $('#alertInterval').value = al.checkInterval ?? 600;
     renderHooks(cfg.webhooks || []);
     renderEventSwitches(cfg.events || {});
     refreshSetupBanner();
@@ -224,10 +230,17 @@ function collectConfig() {
   cfg.telegram.enabled = $('#tgEnabled').checked;
   cfg.telegram.botToken = $('#tgToken').value.trim();
   cfg.telegram.chatIds = $('#tgChatIds').value.trim();
+  cfg.telegram.botControl = $('#tgBotControl').checked;
   cfg.network = cfg.network || {};
   cfg.network.proxy = $('#netProxy').value.trim();
   cfg.biliup = cfg.biliup || {};
   cfg.biliup.baseUrl = $('#biliupBaseUrl').value.trim().replace(/\/+$/, '') || 'http://localhost:19159';
+  cfg.alerts = {
+    emptyFileMB: Math.max(0, parseFloat($('#alertEmptyMB').value) || 0),
+    diskPath: $('#alertDiskPath').value.trim(),
+    diskFreeGB: Math.max(0, parseFloat($('#alertDiskGB').value) || 0),
+    checkInterval: Math.max(30, parseInt($('#alertInterval').value) || 600)
+  };
   // 事件开关
   cfg.events = cfg.events || {};
   $$('#eventSwitches input[data-evkey]').forEach(inp => {
@@ -275,8 +288,13 @@ $('#btnReset').addEventListener('click', async () => {
     $('#tgEnabled').checked = false;
     $('#tgToken').value = '';
     $('#tgChatIds').value = '';
+    $('#tgBotControl').checked = true;
     $('#netProxy').value = '';
     $('#biliupBaseUrl').value = 'http://localhost:19159';
+    $('#alertEmptyMB').value = 1;
+    $('#alertDiskPath').value = '';
+    $('#alertDiskGB').value = 5;
+    $('#alertInterval').value = 600;
     renderHooks([]);
     renderEventSwitches(r.config.events);
     toast('已恢复默认配置');
@@ -356,7 +374,7 @@ $('#btnClearHist').addEventListener('click', async () => {
 });
 
 // 表单变更标记
-['tgEnabled', 'tgToken', 'tgChatIds', 'netProxy', 'biliupBaseUrl'].forEach(id => {
+['tgEnabled', 'tgToken', 'tgChatIds', 'tgBotControl', 'netProxy', 'biliupBaseUrl', 'alertEmptyMB', 'alertDiskPath', 'alertDiskGB', 'alertInterval'].forEach(id => {
   $('#' + id).addEventListener('change', () => saveDirty = true);
   $('#' + id).addEventListener('input', () => saveDirty = true);
 });
