@@ -183,11 +183,27 @@ async function pushWebhooks(event) {
   return { ok: results.every(r => r.ok), results };
 }
 
-// 总入口:按事件类型开关过滤,分发到所有通道
-async function dispatch(event) {
+// ---------- 推送级去重 ----------
+const dedupMap = new Map(); // type|url -> lastTs
+function shouldDedup(event) {
+  const sec = (config.get().events || {}).dedupWindowSec || 0;
+  if (!sec) return false;
+  const key = `${event.type}|${event.url || ''}`;
+  const now = Date.now();
+  if (now - (dedupMap.get(key) || 0) < sec * 1000) return true;
+  dedupMap.set(key, now);
+  return false;
+}
+
+// 总入口:按事件类型开关过滤 + 推送级去重,分发到所有通道
+// opts.skipDedup=true 时绕过去重(重试队列重投等"必须送达"场景)
+async function dispatch(event, opts = {}) {
   const enabled = config.get().events;
   if (enabled[event.type] === false) {
     return { ok: false, skipped: true, reason: `事件类型 ${event.type} 已关闭` };
+  }
+  if (!opts.skipDedup && shouldDedup(event)) {
+    return { ok: false, skipped: true, reason: `去重窗口(${enabled.dedupWindowSec}s)内已推送过同类事件` };
   }
   const [tg, wh] = await Promise.all([pushTelegram(event), pushWebhooks(event)]);
   const results = [...(tg.results || []), ...(wh.results || [])];
