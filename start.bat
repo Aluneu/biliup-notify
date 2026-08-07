@@ -26,18 +26,12 @@ if not exist node_modules (
   )
 )
 
-rem ---- 检查 biliup 后端是否可达 ----
-powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:19159/v1/status' -UseBasicParsing -TimeoutSec 3; exit 0 } catch { exit 1 }"
-if %errorlevel% equ 0 (
-  echo  [OK] 已检测到 biliup 后端 (localhost:19159)
-) else (
-  echo  [提示] 未检测到 biliup 后端 (localhost:19159)。
-  echo        请先启动 biliup(默认端口 19159),或稍后在网页端修改地址。
-  echo.
-)
-
 echo  正在启动服务,网页端将自动打开...
 echo  (关闭本窗口即停止服务)
+echo.
+echo  [提示] biliup 后端地址默认 http://localhost:19159,
+echo         如果 biliup 端口不是 19159,启动后在网页端
+echo         「通知配置」页的 biliup 服务地址 里修改即可。
 echo.
 call node server.js
 pause
