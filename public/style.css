@@ -158,6 +158,10 @@ main { max-width: 1080px; margin: 0 auto; padding: 20px 20px 60px; }
 .hook-del:hover { color: var(--danger); }
 .hook-index { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
 
+/* ---------- 开关行 ---------- */
+.toggle-row { display: flex; align-items: center; gap: 12px; }
+.toggle-label { font-size: 13px; }
+
 /* ---------- 事件列表 ---------- */
 .event-list, .history-list { max-height: 460px; overflow-y: auto; }
 .event-item, .hist-item {
