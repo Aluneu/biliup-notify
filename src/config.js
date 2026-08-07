@@ -28,6 +28,12 @@ const DEFAULTS = {
   biliup: {
     // biliup 后端地址(不带末尾斜杠)
     baseUrl: 'http://localhost:19159',
+    // 后端启用 --auth 时的登录凭据(未开启认证则忽略)
+    auth: {
+      enabled: false,
+      username: 'biliup',   // WebUI 管理员用户名固定为 biliup
+      password: ''
+    },
     // 是否启用 WebSocket 日志监听
     enabled: true,
     // 重连间隔(秒)
@@ -105,6 +111,9 @@ function load() {
 const ENV_MAP = {
   PORT: ['server', 'port'],
   BILIUP_BASEURL: ['biliup', 'baseUrl'],
+  BILIUP_AUTH_ENABLED: ['biliup', 'auth', 'enabled'],
+  BILIUP_AUTH_USERNAME: ['biliup', 'auth', 'username'],
+  BILIUP_AUTH_PASSWORD: ['biliup', 'auth', 'password'],
   PROXY: ['network', 'proxy'],
   TELEGRAM_ENABLED: ['telegram', 'enabled'],
   TELEGRAM_BOTTOKEN: ['telegram', 'botToken'],
