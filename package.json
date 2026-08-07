@@ -1,0 +1,18 @@
+{
+  "name": "biliup-notify",
+  "version": "1.0.0",
+  "description": "biliup 事件推送服务:监听 biliup 后端日志,推送到 Telegram 与自定义 Webhook,带网页配置端",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "undici": "^8.10.0"
+  }
+}
