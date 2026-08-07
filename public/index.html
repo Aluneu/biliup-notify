@@ -99,6 +99,19 @@
     <section class="panel" id="panel-config">
       <div class="card wide">
         <div class="card-head">
+          <div class="card-title">biliup 后端 <span class="hint">事件来源</span></div>
+        </div>
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr">
+          <div class="field">
+            <label>服务地址</label>
+            <input type="text" id="biliupBaseUrl" placeholder="http://localhost:19159（按你实际部署的地址和端口填）">
+          </div>
+        </div>
+        <div class="field-tip">日志监听与主播名解析都从这个地址读取,保存后自动重连。默认 <code>http://localhost:19159</code>,但 biliup 端口可能不同(如 <code>-p</code> 参数、Docker 映射、反代),请按实际填。Docker 部署的 biliup 一般填 <code>http://host.docker.internal:19159</code> 或 <code>http://&lt;容器名&gt;:19159</code>。</div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-head">
           <div class="card-title">Telegram 推送</div>
           <label class="switch">
             <input type="checkbox" id="tgEnabled">
