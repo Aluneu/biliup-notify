@@ -26,7 +26,11 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        # CI 无 biliup 后端,SKIP_BACKEND=1 跳过依赖后端的断言
+        shell: pwsh
+        run: |
+          $env:SKIP_BACKEND = '1'
+          npm test
 
       - name: Build exe (Node SEA)
         run: node scripts/build-exe.mjs

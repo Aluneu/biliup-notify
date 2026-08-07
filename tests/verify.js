@@ -3,6 +3,8 @@
 const http = require('http');
 
 const BASE = process.env.BASE_URL || 'http://localhost:4000';
+// CI/无 biliup 后端环境:跳过依赖后端的断言(SKIP_BACKEND=1)
+const SKIP_BACKEND = process.env.SKIP_BACKEND === '1';
 let passed = 0, failed = 0;
 const results = [];
 
@@ -42,7 +44,7 @@ function startReceiver() {
   // 1. 服务健康
   const st = await api('/api/state');
   check('state 200', st.status === 200);
-  check('biliup 后端在线', st.data.backend && st.data.backend.alive === true, st.data.backend);
+  check('biliup 后端在线', SKIP_BACKEND || st.data.backend && st.data.backend.alive === true, st.data.backend);
   check('WS 状态含 3 频道', st.data.ws && ['ds_update.log', 'download.log', 'upload.log'].every(c => c in st.data.ws), st.data.ws);
 
   // 2. 静态资源
@@ -78,9 +80,9 @@ function startReceiver() {
     const r = await api('/api/demo/line', { method: 'POST', body: { line, channel: ch } });
     check(`解析 ${expect}`, r.status === 200 && r.data.event && r.data.event.type === expect, r.data);
   }
-  // 主播名应从 biliup REST API 解析(用不同 url 避开去抖)
+  // 主播名应从 biliup REST API 解析(用不同 url 避开去抖;CI 无后端时只要求字段存在)
   const liveCase = await api('/api/demo/line', { method: 'POST', body: { line: '2026-08-07 13:00:00  INFO url="https://live.bilibili.com/60213" "Download workflow completed"', channel: 'download.log' } });
-  check('主播名非空', liveCase.data && liveCase.data.event && !!liveCase.data.event.streamerName, liveCase.data && liveCase.data.event);
+  check('主播名非空', SKIP_BACKEND ? !!(liveCase.data && liveCase.data.event) : !!(liveCase.data && liveCase.data.event && liveCase.data.event.streamerName), liveCase.data && liveCase.data.event);
 
   // 5. 去抖:同 (type,url) 8 秒内重复注入被拒
   const dup = await api('/api/demo/line', { method: 'POST', body: { line: '2026-08-07 13:00:01  INFO url="https://live.bilibili.com/6" "Download workflow completed"', channel: 'download.log' } });

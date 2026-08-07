@@ -7,6 +7,8 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 const BASE = process.env.BASE_URL || 'http://localhost:4000';
+// CI/无 biliup 后端环境:跳过依赖后端的断言(SKIP_BACKEND=1)
+const SKIP_BACKEND = process.env.SKIP_BACKEND === '1';
 let passed = 0, failed = 0;
 const results = [];
 const check = (n, c, x) => { if (c) { passed++; results.push('PASS ' + n); } else { failed++; results.push('FAIL ' + n + (x ? ' => ' + JSON.stringify(x) : '')); } };
@@ -16,7 +18,7 @@ async function api(p) { const r = await fetch(BASE + p); const t = await r.text(
 (async () => {
   // 1. 服务健康 + 前端 banner 资源
   const st = await api('/api/state');
-  check('服务健康', st.status === 200 && st.data.backend.alive === true);
+  check('服务健康', st.status === 200 && (SKIP_BACKEND || st.data.backend.alive === true));
   check('index.html 含 banner', read('public/index.html').includes('setupBanner'));
   check('style.css 含 banner 样式', read('public/style.css').includes('.setup-banner'));
   check('app.js 含 banner 逻辑', read('public/app.js').includes('refreshSetupBanner'));
