@@ -8,6 +8,11 @@
   },
   "biliup": {
     "baseUrl": "http://localhost:19159",
+    "auth": {
+      "enabled": false,
+      "username": "biliup",
+      "password": ""
+    },
     "enabled": true,
     "reconnectBaseDelay": 3,
     "refreshStreamersInterval": 60
