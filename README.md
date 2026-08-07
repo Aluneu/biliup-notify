@@ -135,6 +135,16 @@ Telegram 与 Webhook 也可全部在网页端配置,保存即生效(无需重启
 
 > 磁盘预警基于本地目录探测:仅当本服务与 biliup 同机部署时有效,探测失败自动跳过(诚实降级);biliup 后端没有磁盘接口。
 
+### 🔒 网页端鉴权与可靠性
+
+| 功能 | 说明 |
+| --- | --- |
+| **访问令牌** `server.authToken` | 留空 = 不启用;设置后所有 `/api` 请求需带 `Authorization: Bearer <token>`(或 `?token=`)。浏览器首次访问会提示输入并保存在 localStorage |
+| **推送去重** `events.dedupWindowSec` | 同类型事件在窗口(秒)内只推送一次(如"录制完成"与"下载完成"两条日志只发一条通知),0=关闭 |
+| **待重投队列** | 推送失败(真实通道尝试但失败)自动落盘 `pending-queue.json`,后台每 60s 自动重投,最多 10 次;重投绕过去重窗口。网页端总览可查看数量、一键重投/清空 |
+
+队列 API:`GET /api/queue`、`POST /api/queue/retry`、`DELETE /api/queue`。
+
 ### Telegram 消息格式
 
 HTML 排版(标题 + 分隔线 + 图标字段),有直播间链接时附「🔗 打开直播间」内联按钮,点击直达直播间:
