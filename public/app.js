@@ -16,11 +16,23 @@ function toast(msg, ok = true) {
   t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 async function api(path, opts = {}) {
+  const token = localStorage.getItem('bn_token');
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers.Authorization = 'Bearer ' + token;
   const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
     ...opts,
+    headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined
   });
+  if (res.status === 401) {
+    // 服务启用了访问令牌:提示输入并重试
+    const input = prompt('该服务已启用访问令牌,请输入(仅保存在本浏览器):');
+    if (input) {
+      localStorage.setItem('bn_token', input.trim());
+      return api(path, opts);
+    }
+    throw new Error('未授权:需要访问令牌');
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
   return data;
@@ -74,6 +86,7 @@ async function pollState() {
     $('#ovUptime').textContent = Math.floor(s.service.uptime / 60) + ' 分钟';
     $('#ovHistTotal').textContent = s.stats.historyTotal;
     $('#ovEvtCount').textContent = s.stats.recentEvents;
+    loadQueue();
     // WS 通道
     const wsNames = ['ds_update.log', 'download.log', 'upload.log'];
     let anyOk = 0, anyErr = 0;
@@ -157,11 +170,13 @@ async function loadConfig() {
     $('#tgBotControl').checked = cfg.telegram.botControl !== false;
     $('#netProxy').value = (cfg.network && cfg.network.proxy) || '';
     $('#biliupBaseUrl').value = (cfg.biliup && cfg.biliup.baseUrl) || '';
+    $('#authToken').value = (cfg.server && cfg.server.authToken) || '';
     const al = cfg.alerts || {};
     $('#alertEmptyMB').value = al.emptyFileMB ?? 1;
     $('#alertDiskPath').value = al.diskPath || '';
     $('#alertDiskGB').value = al.diskFreeGB ?? 5;
     $('#alertInterval').value = al.checkInterval ?? 600;
+    $('#dedupWindow').value = (cfg.events && cfg.events.dedupWindowSec) ?? 30;
     renderHooks(cfg.webhooks || []);
     renderEventSwitches(cfg.events || {});
     refreshSetupBanner();
@@ -235,6 +250,8 @@ function collectConfig() {
   cfg.network.proxy = $('#netProxy').value.trim();
   cfg.biliup = cfg.biliup || {};
   cfg.biliup.baseUrl = $('#biliupBaseUrl').value.trim().replace(/\/+$/, '') || 'http://localhost:19159';
+  cfg.server = cfg.server || {};
+  cfg.server.authToken = $('#authToken').value.trim();
   cfg.alerts = {
     emptyFileMB: Math.max(0, parseFloat($('#alertEmptyMB').value) || 0),
     diskPath: $('#alertDiskPath').value.trim(),
@@ -246,6 +263,7 @@ function collectConfig() {
   $$('#eventSwitches input[data-evkey]').forEach(inp => {
     cfg.events[inp.dataset.evkey] = inp.checked;
   });
+  cfg.events.dedupWindowSec = Math.max(0, parseInt($('#dedupWindow').value) || 0);
   // Webhook
   cfg.webhooks = $$('.hook-item').map(item => {
     const g = k => item.querySelector(`[data-hk="${k}"]`);
@@ -291,10 +309,12 @@ $('#btnReset').addEventListener('click', async () => {
     $('#tgBotControl').checked = true;
     $('#netProxy').value = '';
     $('#biliupBaseUrl').value = 'http://localhost:19159';
+    $('#authToken').value = '';
     $('#alertEmptyMB').value = 1;
     $('#alertDiskPath').value = '';
     $('#alertDiskGB').value = 5;
     $('#alertInterval').value = 600;
+    $('#dedupWindow').value = 30;
     renderHooks([]);
     renderEventSwitches(r.config.events);
     toast('已恢复默认配置');
@@ -373,8 +393,28 @@ $('#btnClearHist').addEventListener('click', async () => {
   catch (e) { toast(e.message, false); }
 });
 
+/* ---------- 待重投队列 ---------- */
+async function loadQueue() {
+  try {
+    const q = await api('/api/queue');
+    $('#ovQueueCount').textContent = q.active ? `${q.active} 条` : '无';
+  } catch (e) { $('#ovQueueCount').textContent = '--'; }
+}
+$('#btnRetryQueue').addEventListener('click', async () => {
+  try {
+    const r = await api('/api/queue/retry', { method: 'POST', body: {} });
+    toast(`重投完成:成功 ${r.ok} / 失败 ${r.failed}${r.dead ? '' : ''}`);
+    loadQueue();
+  } catch (e) { toast(e.message, false); }
+});
+$('#btnClearQueue').addEventListener('click', async () => {
+  if (!confirm('清空全部待重投消息?')) return;
+  try { await api('/api/queue', { method: 'DELETE' }); toast('已清空'); loadQueue(); }
+  catch (e) { toast(e.message, false); }
+});
+
 // 表单变更标记
-['tgEnabled', 'tgToken', 'tgChatIds', 'tgBotControl', 'netProxy', 'biliupBaseUrl', 'alertEmptyMB', 'alertDiskPath', 'alertDiskGB', 'alertInterval'].forEach(id => {
+['tgEnabled', 'tgToken', 'tgChatIds', 'tgBotControl', 'netProxy', 'biliupBaseUrl', 'authToken', 'alertEmptyMB', 'alertDiskPath', 'alertDiskGB', 'alertInterval', 'dedupWindow'].forEach(id => {
   $('#' + id).addEventListener('change', () => saveDirty = true);
   $('#' + id).addEventListener('input', () => saveDirty = true);
 });
