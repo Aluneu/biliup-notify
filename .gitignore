@@ -1,0 +1,12 @@
+# 运行时数据(含敏感凭据,禁止上传)
+config.json
+history.json
+tests/received.json
+
+# 依赖
+node_modules/
+
+# 系统
+.DS_Store
+Thumbs.db
+*.log
