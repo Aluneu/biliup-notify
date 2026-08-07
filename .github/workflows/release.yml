@@ -1,0 +1,48 @@
+name: Release Windows exe
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:   # 也可手动触发(不打 tag)
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build exe (Node SEA)
+        run: node scripts/build-exe.mjs
+
+      - name: Verify artifact
+        shell: pwsh
+        run: |
+          Get-Item dist/biliup-notify-windows-x64.zip | Select-Object Name, Length
+          if (-not (Test-Path 'dist/biliup-notify-windows-x64.zip')) { throw 'zip missing' }
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/biliup-notify-windows-x64.zip
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
