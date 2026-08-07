@@ -10,10 +10,22 @@ const { LogWatcher } = require('./src/log-watcher');
 const eventParser = require('./src/event-parser');
 const { TgBot } = require('./src/tg-bot');
 const { AlertWatch } = require('./src/alert-watch');
+const retryQueue = require('./src/retry-queue');
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ---------- 网页端鉴权(可选) ----------
+// 配置了 server.authToken 后,所有 /api 请求需带 Authorization: Bearer <token> 或 ?token=
+app.use('/api', (req, res, next) => {
+  const token = config.get().server.authToken;
+  if (!token) return next();
+  const headerAuth = req.headers.authorization || '';
+  const queryToken = req.query.token;
+  if (headerAuth === `Bearer ${token}` || queryToken === token) return next();
+  res.status(401).json({ ok: false, error: '未授权:请在请求头带 Authorization: Bearer <token>' });
+});
 
 // ---------- 事件流 ----------
 const watcher = new LogWatcher();
@@ -32,6 +44,8 @@ watcher.on('line', async ({ channel, text }) => {
     pushRecent(event);
     const result = await notifier.dispatch(event);
     history.record(event, result);
+    // 推送失败(真实通道尝试但失败)→ 进入持久化重试队列
+    if (!result.skipped && !result.ok) retryQueue.enqueue(event, result);
     const status = result.skipped ? 'SKIP' : (result.ok ? 'OK' : 'FAIL');
     console.log(`[push] ${status} ${JSON.stringify(result.summary || result.reason || '')}`);
   } catch (e) {
@@ -52,6 +66,7 @@ alertWatch.on('alert', async (event) => {
   pushRecent(event);
   const result = await notifier.dispatch(event);
   history.record(event, result);
+  if (!result.skipped && !result.ok) retryQueue.enqueue(event, result);
 });
 
 // ---------- API ----------
@@ -138,6 +153,7 @@ app.post('/api/demo/line', async (req, res) => {
   pushRecent(event);
   const result = await notifier.dispatch(event);
   history.record(event, result);
+  if (!result.skipped && !result.ok) retryQueue.enqueue(event, result);
   res.json({ ok: true, event, result });
 });
 
@@ -149,6 +165,32 @@ app.get('/api/streamers', async (req, res) => {
   } catch (e) {
     res.status(502).json({ ok: false, error: '无法连接 biliup 后端: ' + e.message });
   }
+});
+
+// ---------- 待重投队列 ----------
+app.get('/api/queue', (req, res) => {
+  const all = retryQueue.listAll();
+  res.json({
+    ok: true,
+    active: all.filter(i => !i.dead).length,
+    dead: all.filter(i => i.dead).length,
+    entries: all.slice(0, 50)
+  });
+});
+
+app.post('/api/queue/retry', async (req, res) => {
+  const { id } = req.body || {};
+  const result = await retryQueue.retryAll(id || null);
+  res.json({ ok: true, ...result });
+});
+
+app.delete('/api/queue', (req, res) => {
+  retryQueue.clear();
+  res.json({ ok: true });
+});
+
+app.post('/api/queue/:id/remove', (req, res) => {
+  res.json({ ok: retryQueue.remove(req.params.id) });
 });
 
 // 兜底 404(非 /api 交给静态托管)
@@ -174,7 +216,8 @@ app.listen(port, () => {
   watcher.start();
   tgBot.start();
   alertWatch.start();
+  retryQueue.startRetryLoop();
 });
 
-process.on('SIGINT', () => { watcher.stop(); tgBot.stop(); alertWatch.stop(); process.exit(0); });
-process.on('SIGTERM', () => { watcher.stop(); tgBot.stop(); alertWatch.stop(); process.exit(0); });
+process.on('SIGINT', () => { watcher.stop(); tgBot.stop(); alertWatch.stop(); retryQueue.stopRetryLoop(); process.exit(0); });
+process.on('SIGTERM', () => { watcher.stop(); tgBot.stop(); alertWatch.stop(); retryQueue.stopRetryLoop(); process.exit(0); });
