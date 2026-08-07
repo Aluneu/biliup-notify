@@ -15,7 +15,14 @@
     "enabled": false,
     "botToken": "",
     "chatIds": "",
+    "botControl": true,
     "timeout": 10
+  },
+  "alerts": {
+    "emptyFileMB": 1,
+    "diskPath": "",
+    "diskFreeGB": 5,
+    "checkInterval": 600
   },
   "webhooks": [],
   "events": {
