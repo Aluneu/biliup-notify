@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>biliup-notify · 推送服务</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M12 2.5 3.5 6.5v6c0 5 3.6 8.6 8.5 10 4.9-1.4 8.5-5 8.5-10v-6L12 2.5z"/>
+        <path d="M9 12l2.2 2.2L15.5 9.8"/>
+      </svg>
+      <span class="brand-name">biliup-notify</span>
+      <span class="brand-sub">事件推送服务</span>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="overview">总览</button>
+      <button class="tab" data-tab="config">通知配置</button>
+      <button class="tab" data-tab="history">推送历史</button>
+    </nav>
+    <div class="top-status">
+      <span class="dot" id="backendDot" title="biliup 后端"></span>
+      <span id="backendText">后端 --</span>
+      <span class="sep">·</span>
+      <span class="dot" id="wsDot" title="日志监听"></span>
+      <span id="wsText">监听 --</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ 总览 ============ -->
+    <section class="panel active" id="panel-overview">
+      <div class="cards">
+        <div class="card">
+          <div class="card-title">biliup 后端</div>
+          <div class="card-body">
+            <div class="kv"><span>地址</span><code id="ovBaseUrl">--</code></div>
+            <div class="kv"><span>连通性</span><b id="ovBackend">--</b></div>
+            <div class="kv"><span>服务运行</span><span id="ovUptime">--</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">日志监听 <span class="hint">WebSocket</span></div>
+          <div class="card-body" id="ovWs">
+            <div class="ws-row"><span class="ws-name">ds_update.log</span><span class="ws-state pending">--</span></div>
+            <div class="ws-row"><span class="ws-name">download.log</span><span class="ws-state pending">--</span></div>
+            <div class="ws-row"><span class="ws-name">upload.log</span><span class="ws-state pending">--</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">推送统计</div>
+          <div class="card-body">
+            <div class="kv"><span>历史推送</span><b id="ovHistTotal">--</b></div>
+            <div class="kv"><span>本会话事件</span><b id="ovEvtCount">--</b></div>
+            <div class="kv"><span>当前时间</span><span id="ovClock">--</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">最近事件 <span class="hint">由日志实时解析</span></div>
+          <button class="btn ghost sm" id="btnRefreshEvents">刷新</button>
+        </div>
+        <div class="event-list" id="eventList"><div class="empty">暂无事件,等待 biliup 产生日志…</div></div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">调试注入 <span class="hint">模拟一条日志,验证解析与推送管道</span></div>
+        </div>
+        <div class="demo-row">
+          <select id="demoChannel">
+            <option value="ds_update.log">ds_update.log</option>
+            <option value="download.log" selected>download.log</option>
+            <option value="upload.log">upload.log</option>
+          </select>
+          <input type="text" id="demoLine" placeholder="例如: 2026-08-07 12:00:00  INFO url=\"https://live.bilibili.com/1\" \"Download workflow completed\"" />
+          <button class="btn primary" id="btnDemoInject">注入测试</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 通知配置 ============ -->
+    <section class="panel" id="panel-config">
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">Telegram 推送</div>
+          <label class="switch">
+            <input type="checkbox" id="tgEnabled">
+            <span class="track"></span>
+          </label>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Bot Token</label>
+            <input type="password" id="tgToken" placeholder="123456789:AAF-xxxx（@BotFather 获取）" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>接收 Chat ID</label>
+            <input type="text" id="tgChatIds" placeholder="123456789 或 -1001234567890，多个用英文逗号分隔">
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:10px">
+          <div class="field">
+            <label>出站网络代理 <span style="color:var(--text-dim)">（Telegram / Webhook 推送都走；留空 = 直连）</span></label>
+            <input type="text" id="netProxy" placeholder="如 http://127.0.0.1:7890（直连 Telegram 不通时必须填）">
+          </div>
+        </div>
+        <div class="field-tip">发送格式为 HTML，含主播名 / 直播间链接 / 时间 / 原始日志。测试前请先保存配置。</div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">Webhook 推送 <span class="hint">自定义 POST JSON，可配多个</span></div>
+          <button class="btn ghost sm" id="btnAddHook">+ 添加 Webhook</button>
+        </div>
+        <div id="hookList"></div>
+        <div class="field-tip">Webhook 收到 JSON：<code>event / type_label / streamer / url / time / message</code> 等字段，另附 <code>text</code> 纯文本摘要，兼容企业微信 / 钉钉 / 飞书等常见机器人格式。</div>
+      </div>
+
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">事件开关</div>
+        </div>
+        <div class="event-switches" id="eventSwitches"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="btnReset">恢复默认配置</button>
+        <button class="btn primary" id="btnSave">保存配置</button>
+        <button class="btn accent" id="btnTest">发送测试推送</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </section>
+
+    <!-- ============ 推送历史 ============ -->
+    <section class="panel" id="panel-history">
+      <div class="card wide">
+        <div class="card-head">
+          <div class="card-title">推送历史 <span class="hint" id="histCount"></span></div>
+          <div class="head-actions">
+            <button class="btn ghost sm" id="btnRefreshHist">刷新</button>
+            <button class="btn ghost sm danger" id="btnClearHist">清空</button>
+          </div>
+        </div>
+        <div class="history-list" id="historyList"><div class="empty">暂无推送记录</div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
