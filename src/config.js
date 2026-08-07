@@ -2,8 +2,15 @@
 const fs = require('fs');
 const path = require('path');
 
-// 数据目录:默认项目根目录;Docker 等场景用环境变量 BILIUP_NOTIFY_DATA_DIR 指向挂载卷
-const DATA_DIR = process.env.BILIUP_NOTIFY_DATA_DIR || path.join(__dirname, '..');
+// 数据目录:
+//   - 普通运行(node server.js):项目根目录(src/ 的上一级)
+//   - SEA exe:exe 所在目录(与 public/ 同级,保证配置持久化在解压目录)
+//   - Docker 等:环境变量 BILIUP_NOTIFY_DATA_DIR 指向挂载卷
+// SEA 判定:process.isSea(Node 22.9+)或 execPath 不是 node.exe(esbuild bundle 后 __dirname 已指向 exe 目录)
+const EXE_NAME = path.basename(process.execPath).toLowerCase();
+const isSea = process.isSea === true || (EXE_NAME !== 'node' && EXE_NAME !== 'node.exe');
+const DATA_DIR = process.env.BILIUP_NOTIFY_DATA_DIR
+  || (isSea ? path.dirname(process.execPath) : path.join(__dirname, '..'));
 const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
 
 // 默认配置
