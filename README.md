@@ -31,17 +31,19 @@ biliup 后端(`:19159`)通过 `GET /v1/ws/logs?file=<频道>` WebSocket 逐行�
 
 ### 🐳 Docker 版(服务器 / VPS)
 
+本 compose **只启动推送服务**;biliup 请用你自己的部署(本机进程 / 已有容器 / 远程服务器)。
+
 ```bash
-# 1. 复制环境变量模板并填写 Telegram 配置(可选)
+# 1. 复制环境变量模板并填写 BILIUP_BASEURL(必填)与 Telegram 配置(可选)
 cp .env.example .env
 
-# 2. 一键启动 biliup + 推送服务
+# 2. 启动推送服务
 docker compose up -d
 
 # 3. 打开 http://<服务器IP>:4000
 ```
 
-Docker 版会同时启动 biliup 官方镜像(`ghcr.io/biliup/caution:latest`)和推送服务,数据分别持久化在 `data/biliup/` 与 `data/notify/`。Telegram 配置可通过 `.env` 注入,也可之后在网页端修改。
+`BILIUP_BASEURL` 指向你的 biliup 后端(不一定是 19159,按实际部署填):宿主机上的 biliup 填 `http://host.docker.internal:<端口>`;另一个容器填 `http://<容器名>:<端口>`;远程填 `http://<IP>:<端口>`。配置持久化在 `data/notify/` 卷,Telegram 配置可通过 `.env` 注入,也可之后在网页端修改。
 
 ### 手动部署(有 Node 环境)
 
@@ -64,7 +66,7 @@ npm start          # 默认 http://localhost:4000
                            // 直连 Telegram 不通时必须填,如 "http://127.0.0.1:7890"
   },
   "biliup": {
-    "baseUrl": "http://localhost:19159",   // biliup 后端地址
+    "baseUrl": "http://localhost:19159",   // biliup 后端地址(默认端口 19159,但可能不同——按实际部署填,网页端可改)
     "enabled": true,                        // 是否监听日志
     "reconnectBaseDelay": 3,                // 断线重连基础间隔(秒)
     "refreshStreamersInterval": 60          // 主播名映射缓存刷新(秒)
