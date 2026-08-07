@@ -59,7 +59,9 @@ function startReceiver() {
     webhooks: [{
       id: 'verify-hook', name: '验证', url: `http://127.0.0.1:${rc.port}/hook`,
       enabled: true, headers: { 'X-Verify': 'yes' }, timeout: 5
-    }]
+    }],
+    // 测试期间关闭推送级去重,避免同 key 用例被窗口误伤
+    events: { dedupWindowSec: 0 }
   };
   const putCfg = await api('/api/config', { method: 'PUT', body: webhookCfg });
   check('配置保存 webhooks=1', putCfg.data && putCfg.data.config && putCfg.data.config.webhooks && putCfg.data.config.webhooks.length === 1, putCfg.data);
@@ -121,7 +123,7 @@ function startReceiver() {
   check('事件流非空', evs.data && evs.data.events && evs.data.events.length > 0);
 
   // ---- 清理测试数据 ----
-  await api('/api/config', { method: 'PUT', body: { webhooks: [] } });
+  await api('/api/config', { method: 'PUT', body: { webhooks: [], events: { dedupWindowSec: 30 } } });
   await api('/api/history', { method: 'DELETE' });
   rc.server.close();
 
