@@ -2,7 +2,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONFIG_PATH = path.join(__dirname, '..', 'config.json');
+// 数据目录:默认项目根目录;Docker 等场景用环境变量 BILIUP_NOTIFY_DATA_DIR 指向挂载卷
+const DATA_DIR = process.env.BILIUP_NOTIFY_DATA_DIR || path.join(__dirname, '..');
+const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
 
 // 默认配置
 const DEFAULTS = {
@@ -68,7 +70,33 @@ function load() {
     if (e.code !== 'ENOENT') console.error('[config] 读取失败,使用默认配置:', e.message);
     cache = structuredClone(DEFAULTS);
   }
+  applyEnvOverrides(cache);
   return cache;
+}
+
+// 环境变量覆盖(12-factor;Docker/无头部署用,优先级高于 config.json):
+//   BILIUP_NOTIFY_PORT, BILIUP_NOTIFY_BILIUP_BASEURL, BILIUP_NOTIFY_PROXY,
+//   BILIUP_NOTIFY_TELEGRAM_ENABLED, BILIUP_NOTIFY_TELEGRAM_BOTTOKEN, BILIUP_NOTIFY_TELEGRAM_CHATIDS
+const ENV_MAP = {
+  PORT: ['server', 'port'],
+  BILIUP_BASEURL: ['biliup', 'baseUrl'],
+  PROXY: ['network', 'proxy'],
+  TELEGRAM_ENABLED: ['telegram', 'enabled'],
+  TELEGRAM_BOTTOKEN: ['telegram', 'botToken'],
+  TELEGRAM_CHATIDS: ['telegram', 'chatIds']
+};
+function applyEnvOverrides(cfg) {
+  for (const [suffix, pathArr] of Object.entries(ENV_MAP)) {
+    const val = process.env['BILIUP_NOTIFY_' + suffix];
+    if (val === undefined || val === '') continue;
+    let node = cfg;
+    for (let i = 0; i < pathArr.length - 1; i++) node = node[pathArr[i]];
+    const key = pathArr[pathArr.length - 1];
+    const orig = node[key];
+    if (typeof orig === 'boolean') node[key] = (val === 'true' || val === '1');
+    else if (typeof orig === 'number') node[key] = Number(val);
+    else node[key] = val;
+  }
 }
 
 function deepMerge(base, extra) {
