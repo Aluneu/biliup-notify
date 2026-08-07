@@ -155,6 +155,7 @@ async function loadConfig() {
     $('#tgToken').value = cfg.telegram.botToken || '';
     $('#tgChatIds').value = cfg.telegram.chatIds || '';
     $('#netProxy').value = (cfg.network && cfg.network.proxy) || '';
+    $('#biliupBaseUrl').value = (cfg.biliup && cfg.biliup.baseUrl) || '';
     renderHooks(cfg.webhooks || []);
     renderEventSwitches(cfg.events || {});
     refreshSetupBanner();
@@ -225,6 +226,8 @@ function collectConfig() {
   cfg.telegram.chatIds = $('#tgChatIds').value.trim();
   cfg.network = cfg.network || {};
   cfg.network.proxy = $('#netProxy').value.trim();
+  cfg.biliup = cfg.biliup || {};
+  cfg.biliup.baseUrl = $('#biliupBaseUrl').value.trim().replace(/\/+$/, '') || 'http://localhost:19159';
   // 事件开关
   cfg.events = cfg.events || {};
   $$('#eventSwitches input[data-evkey]').forEach(inp => {
@@ -273,6 +276,7 @@ $('#btnReset').addEventListener('click', async () => {
     $('#tgToken').value = '';
     $('#tgChatIds').value = '';
     $('#netProxy').value = '';
+    $('#biliupBaseUrl').value = 'http://localhost:19159';
     renderHooks([]);
     renderEventSwitches(r.config.events);
     toast('已恢复默认配置');
@@ -352,7 +356,7 @@ $('#btnClearHist').addEventListener('click', async () => {
 });
 
 // 表单变更标记
-['tgEnabled', 'tgToken', 'tgChatIds', 'netProxy'].forEach(id => {
+['tgEnabled', 'tgToken', 'tgChatIds', 'netProxy', 'biliupBaseUrl'].forEach(id => {
   $('#' + id).addEventListener('change', () => saveDirty = true);
   $('#' + id).addEventListener('input', () => saveDirty = true);
 });
