@@ -198,6 +198,20 @@ main { max-width: 1080px; margin: 0 auto; padding: 20px 20px 60px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.ok { border-color: rgba(63,185,80,.5); }
 .toast.err { border-color: rgba(248,81,73,.5); }
+
+/* ---------- 未配置引导 ---------- */
+.setup-banner {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, rgba(34,158,217,.12), rgba(34,158,217,.04));
+  border: 1px solid rgba(34,158,217,.35);
+  border-radius: var(--radius);
+  padding: 14px 18px; margin-bottom: 16px;
+}
+.setup-banner[hidden] { display: none; }
+.sb-icon { font-size: 26px; line-height: 1; }
+.sb-body { flex: 1; }
+.sb-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.sb-desc { font-size: 12.5px; color: var(--text-dim); }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #2b333d; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
