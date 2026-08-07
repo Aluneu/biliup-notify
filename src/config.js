@@ -16,7 +16,9 @@ const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
 // 默认配置
 const DEFAULTS = {
   server: {
-    port: 4000
+    port: 4000,
+    // 网页端访问令牌(留空 = 不启用鉴权;设置后所有 /api 请求需带 Authorization: Bearer <token>)
+    authToken: ''
   },
   // 出站网络代理(Telegram API / Webhook 推送都走;留空 = 直连)
   // 本机无法直连外网时填如 http://127.0.0.1:7890
@@ -73,7 +75,9 @@ const DEFAULTS = {
     upload_start: true,       // 开始上传
     upload_success: true,     // 投稿成功
     error: true,              // 出错
-    alert: true               // 告警(空录制/磁盘不足)
+    alert: true,              // 告警(空录制/磁盘不足)
+    // 推送级去重:同类型事件在窗口(秒)内只推一次,0=关闭
+    dedupWindowSec: 30
   },
   history: {
     maxEntries: 200   // 保留最近推送记录条数
