@@ -44,6 +44,22 @@ $('#tabs').addEventListener('click', e => {
   if (btn.dataset.tab === 'history') loadHistory();
   if (btn.dataset.tab === 'config') loadConfig();
 });
+$('#btnGoConfig').addEventListener('click', () => {
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'config'));
+  $$('.panel').forEach(p => p.classList.remove('active'));
+  $('#panel-config').classList.add('active');
+  loadConfig();
+});
+
+// 未配置引导:无任何可用推送通道时显示
+function refreshSetupBanner() {
+  const banner = $('#setupBanner');
+  if (!banner || !state.config) return;
+  const tg = state.config.telegram || {};
+  const hooks = (state.config.webhooks || []).filter(h => h && h.url && h.enabled !== false);
+  const hasChannel = (tg.enabled && tg.botToken && tg.chatIds) || hooks.length > 0;
+  banner.hidden = hasChannel;
+}
 
 /* ---------- 状态轮询 ---------- */
 async function pollState() {
@@ -141,6 +157,7 @@ async function loadConfig() {
     $('#netProxy').value = (cfg.network && cfg.network.proxy) || '';
     renderHooks(cfg.webhooks || []);
     renderEventSwitches(cfg.events || {});
+    refreshSetupBanner();
     saveDirty = false;
   } catch (e) { toast('加载配置失败: ' + e.message, false); }
 }
@@ -241,6 +258,7 @@ $('#btnSave').addEventListener('click', async () => {
     const patch = collectConfig();
     const r = await api('/api/config', { method: 'PUT', body: patch });
     state.config = r.config;
+    refreshSetupBanner();
     saveDirty = false;
     toast('配置已保存');
   } catch (e) { toast('保存失败: ' + e.message, false); }
@@ -338,3 +356,9 @@ $('#btnClearHist').addEventListener('click', async () => {
   $('#' + id).addEventListener('change', () => saveDirty = true);
   $('#' + id).addEventListener('input', () => saveDirty = true);
 });
+
+// 初始加载配置 → 刷新引导 banner
+api('/api/config').then(cfg => {
+  state.config = cfg;
+  refreshSetupBanner();
+}).catch(() => {});
