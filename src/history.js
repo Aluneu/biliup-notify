@@ -4,7 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 
-const HISTORY_PATH = path.join(__dirname, '..', 'history.json');
+// 数据目录:默认项目根目录;Docker 等场景用环境变量 BILIUP_NOTIFY_DATA_DIR 指向挂载卷
+const DATA_DIR = process.env.BILIUP_NOTIFY_DATA_DIR || path.join(__dirname, '..');
+const HISTORY_PATH = path.join(DATA_DIR, 'history.json');
 const MAX_KEEP = 500;
 
 let entries = [];
