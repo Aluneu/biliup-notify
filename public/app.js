@@ -86,6 +86,7 @@ async function pollState() {
     $('#ovUptime').textContent = Math.floor(s.service.uptime / 60) + ' 分钟';
     $('#ovHistTotal').textContent = s.stats.historyTotal;
     $('#ovEvtCount').textContent = s.stats.recentEvents;
+    $('#ovVersion').textContent = s.service.version;
     loadQueue();
     // WS 通道
     const wsNames = ['ds_update.log', 'download.log', 'upload.log'];

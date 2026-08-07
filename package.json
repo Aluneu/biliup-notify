@@ -1,6 +1,6 @@
 {
   "name": "biliup-notify",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "biliup 事件推送服务:监听 biliup 后端日志,推送到 Telegram 与自定义 Webhook,带网页配置端",
   "type": "commonjs",
   "main": "server.js",

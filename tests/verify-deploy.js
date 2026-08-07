@@ -19,6 +19,10 @@ async function api(p) { const r = await fetch(BASE + p); const t = await r.text(
   // 1. 服务健康 + 前端 banner 资源
   const st = await api('/api/state');
   check('服务健康', st.status === 200 && (SKIP_BACKEND || st.data.backend.alive === true));
+  // 单一版本来源:API version = "v" + package.json version(防止硬编码双版本号漂移)
+  const pkgVersion = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
+  check('版本号单一来源', st.data.service && st.data.service.version === 'v' + pkgVersion, st.data.service && st.data.service.version);
+  check('server.js 无硬编码版本号', !read('server.js').match(/version:\s*['"]\d+\.\d+\.\d+['"]/));
   check('index.html 含 banner', read('public/index.html').includes('setupBanner'));
   check('style.css 含 banner 样式', read('public/style.css').includes('.setup-banner'));
   check('app.js 含 banner 逻辑', read('public/app.js').includes('refreshSetupBanner'));

@@ -25,6 +25,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check version consistency (tag vs package.json)
+        # 防止"双版本号":git tag 必须与 package.json version 一致(如 tag v1.1.0 ↔ version 1.1.0)
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}" -replace '^v', ''
+          $pkg = (Get-Content package.json | ConvertFrom-Json).version
+          Write-Host "tag=$tag pkg=$pkg"
+          if ($tag -ne $pkg) {
+            throw "版本不一致: git tag 为 $tag,package.json 为 $pkg。发版前请先同步 package.json 的 version 字段"
+          }
+
       - name: Run tests
         # CI 无 biliup 后端:SKIP_BACKEND=1;先启动服务再跑测试
         shell: pwsh

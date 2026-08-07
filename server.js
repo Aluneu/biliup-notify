@@ -1,6 +1,8 @@
 'use strict';
 // biliup-notify 服务入口:HTTP API + 静态网页端 + biliup 日志监听
 const path = require('path');
+// 单一版本来源:package.json(发版时同步改 version 字段与 git tag 保持一致,CI 会校验)
+const APP_VERSION = 'v' + (require('./package.json').version);
 const express = require('express');
 const config = require('./src/config');
 const history = require('./src/history');
@@ -75,7 +77,7 @@ app.get('/api/state', async (req, res) => {
   try { backendAlive = await biliupClient.ping(); } catch (e) {}
   res.json({
     service: {
-      version: '1.0.0',
+      version: APP_VERSION,
       startedAt: process.startedAt,
       uptime: Math.round(process.uptime())
     },
